@@ -184,6 +184,18 @@ void Fluid::project(ofVec2f* currentVelocity, ofVec2f* prevVelocity) {
         }
     }
     setBoundaryVec(prevVelocity, 0);
+    
+//    for (int x = 1; x < 101; x++) {
+//        for (int y = 1; y < 101; y++) {
+//            test[getPos(x, y)] = prevVelocity[getPos(x, y)].y;
+//        }
+//    }
+    
+    for (int x = 1; x < 101; x++) {
+        for (int y = 1; y < 101; y++) {
+            test2[getPos(x, y)] = prevVelocity[getPos(x, y)].y;
+        }
+    }
 
     for (int k = 0; k < 20; k++) {
         for (int x = 1; x < 101; x++) {
@@ -197,6 +209,14 @@ void Fluid::project(ofVec2f* currentVelocity, ofVec2f* prevVelocity) {
         }
         setBoundaryVec(prevVelocity, 0);
     }
+    
+    
+    for (int x = 1; x < 101; x++) {
+        for (int y = 1; y < 101; y++) {
+            test[getPos(x, y)] = prevVelocity[getPos(x, y)].x;
+        }
+    }
+    
     for (int x = 1; x < 101; x++) {
         for (int y = 1; y < 101; y++) {
             currentVelocity[getPos(x, y)].x -= 0.5 * (prevVelocity[getPos(x+1, y)].x - prevVelocity[getPos(x-1, y)].x) / h;
@@ -217,6 +237,24 @@ void Fluid::drawDensity() {
     for (int y = 0; y < NUM / (cellSize * cellSize); y++) {
         for (int x = 0; x < NUM / (cellSize * cellSize); x++) {
             ofSetColor(density[getPos(x, y)] * 150, density[getPos(x, y)] * 200,density[getPos(x, y)] * 255);
+            ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+    }
+}
+
+void Fluid::drawTest() {
+    for (int y = 0; y < NUM / (cellSize * cellSize); y++) {
+        for (int x = 0; x < NUM / (cellSize * cellSize); x++) {
+            ofSetColor(250, 100, 155, test[getPos(x, y)]  * 80000);
+            ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+    }
+}
+
+void Fluid::drawTest2() {
+    for (int y = 0; y < NUM / (cellSize * cellSize); y++) {
+        for (int x = 0; x < NUM / (cellSize * cellSize); x++) {
+            ofSetColor(255, 250, 50, test2[getPos(x, y)]  * 80000);
             ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
         }
     }
@@ -302,6 +340,8 @@ void Fluid::setup() {
         prev_velocity[i] = ofVec2f(0, 0);
         density[i] = 0;
         prev_density[i] = 0;
+        test[i] = 0;
+        test2[i] = 0;
     }
 }
 

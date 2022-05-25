@@ -20,6 +20,8 @@ void ofApp::draw(){
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
     fluid.drawDensity();
     fluid.drawVelocity();
+    fluid.drawTest();
+    fluid.drawTest2();
 }
 
 void ofApp::keyPressed(int key){

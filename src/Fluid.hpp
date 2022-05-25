@@ -23,9 +23,12 @@ private:
     ofVec2f velocity[NUM];
     ofVec2f prev_velocity[NUM];
     
+    
     //密度
     float density[NUM];
     float prev_density[NUM];
+    float test[NUM];
+    float test2[NUM];
     
     //微小時間を設定
     float dt = 0.01;
@@ -87,5 +90,8 @@ public:
     
     //速度を描画
     void drawVelocity();
+    
+    void drawTest();
+    void drawTest2();
         
 };
