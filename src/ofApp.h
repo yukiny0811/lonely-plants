@@ -1,20 +1,35 @@
+
 //
-//  ofApp.h
+// Lonely Plants
+// 2021 Yuki Kuwashima
 //
-//  Created by クワシマ・ユウキ on 2021/04/26.
+// 流体アニメーションはJos StamさんのStable Fluidsのアルゴリズムを使っています。
+// 植物の成長シミュレーションのアルゴリズムはL-Systemを使っています。
 //
+
 
 #pragma once
 
 #include "ofMain.h"
 #include "Fluid.hpp"
 
-#define NUM 102*102
-
 class ofApp : public ofBaseApp{
     
 private:
+    
+    ofColor backColor;
+    
+    bool gravityOn = false;
+    
+    int timeCount = 0;
+    
     Fluid fluid;
+    string V[8];
+    string W = "f";
+    string Pkey[1];
+    string PValue[1];
+    
+    bool showBone = false;
 
 public:
     void setup();

@@ -1,12 +1,6 @@
-//
-//  fluid.cpp
-//
-//  Created by クワシマ・ユウキ on 2021/04/28.
-//
 
 #include "Fluid.hpp"
 
-//addSource
 void Fluid::addSourceFloat(float* current, float* prev, float dt) {
     for (int i = 0; i < NUM; i++) {
         current[i] += prev[i] * dt;
@@ -18,7 +12,6 @@ void Fluid::addSourceVec(ofVec2f* current, ofVec2f* prev, float dt) {
     }
 }
 
-//拡散
 void Fluid::diffuseFloat(float* current, float* prev, float diffusionAmount, float dt) {
     int iter = 20;
     float amount = dt * diffusionAmount * 100 * 100;
@@ -57,18 +50,17 @@ void Fluid::diffuseVec(ofVec2f* current, ofVec2f* prev, float diffusionAmount, f
     }
 }
 
-//壁の計算
 void Fluid::setBoundaryFloat(float* current, int side) {
     for (int i = 1; i < 101; i++) {
-        current[getPos(0, i)] = side == 1 ? -current[getPos(1, i)] : current[getPos(1, i)];
-        current[getPos(100+1, i)] = side == 1 ? -current[getPos(100, i)] : current[getPos(100, i)];
-        current[getPos(i, 0)] = side == 2 ? -current[getPos(i, 1)] : current[getPos(i, 1)];
-        current[getPos(i, 100+1)] = side == 2 ? -current[getPos(i, 100)] : current[getPos(i, 100)];
+        current[getPos(0, i)] = 0;
+        current[getPos(100+1, i)] = 0;
+        current[getPos(i, 0)] = 0;
+        current[getPos(i, 100+1)] = 0;
     }
-    current[getPos(0, 0)] = 0.5 * (current[getPos(1, 0)] + current[getPos(0, 1)]);
-    current[getPos(0, 100+1)] = 0.5 * (current[getPos(1, 100+1)] + current[getPos(0, 100)]);
-    current[getPos(100+1, 0)] = 0.5 * (current[getPos(100, 0)] + current[getPos(100+1, 1)]);
-    current[getPos(100+1, 100+1)] = 0.5 * (current[getPos(100, 100+1)] + current[getPos(100+1, 100)]);
+    current[getPos(0, 0)] = 0;
+    current[getPos(0, 100+1)] = 0;
+    current[getPos(100+1, 0)] = 0;
+    current[getPos(100+1, 100+1)] = 0;
 }
 void Fluid::setBoundaryVec(ofVec2f* current, int side) {
     if (side == 1) {
@@ -107,7 +99,6 @@ void Fluid::setBoundaryVec(ofVec2f* current, int side) {
     }
 }
 
-//移流
 void Fluid::advect(float* currentDensity, float* prevDensity, ofVec2f* currentVelocity, float dt) {
     float dt0 = dt * 100;
     for (int x = 1; x < 101; x++) {
@@ -171,7 +162,6 @@ void Fluid::advectVel(ofVec2f* currentVelocity, ofVec2f* prevVelocity, float dt)
     setBoundaryVec(currentVelocity, 2);
 }
 
-//project
 void Fluid::project(ofVec2f* currentVelocity, ofVec2f* prevVelocity) {
     float h = 1.0 / 100;
     for (int x = 1; x < 101; x++) {
@@ -184,18 +174,6 @@ void Fluid::project(ofVec2f* currentVelocity, ofVec2f* prevVelocity) {
         }
     }
     setBoundaryVec(prevVelocity, 0);
-    
-//    for (int x = 1; x < 101; x++) {
-//        for (int y = 1; y < 101; y++) {
-//            test[getPos(x, y)] = prevVelocity[getPos(x, y)].y;
-//        }
-//    }
-    
-    for (int x = 1; x < 101; x++) {
-        for (int y = 1; y < 101; y++) {
-            test2[getPos(x, y)] = prevVelocity[getPos(x, y)].y;
-        }
-    }
 
     for (int k = 0; k < 20; k++) {
         for (int x = 1; x < 101; x++) {
@@ -209,14 +187,6 @@ void Fluid::project(ofVec2f* currentVelocity, ofVec2f* prevVelocity) {
         }
         setBoundaryVec(prevVelocity, 0);
     }
-    
-    
-    for (int x = 1; x < 101; x++) {
-        for (int y = 1; y < 101; y++) {
-            test[getPos(x, y)] = prevVelocity[getPos(x, y)].x;
-        }
-    }
-    
     for (int x = 1; x < 101; x++) {
         for (int y = 1; y < 101; y++) {
             currentVelocity[getPos(x, y)].x -= 0.5 * (prevVelocity[getPos(x+1, y)].x - prevVelocity[getPos(x-1, y)].x) / h;
@@ -227,42 +197,36 @@ void Fluid::project(ofVec2f* currentVelocity, ofVec2f* prevVelocity) {
     setBoundaryVec(currentVelocity, 2);
 }
 
-//二次元座標をindexに変換
 int Fluid::getPos(int x, int y) {
     return y * 102 + x;
 }
 
-//密度を描画
 void Fluid::drawDensity() {
     for (int y = 0; y < NUM / (cellSize * cellSize); y++) {
         for (int x = 0; x < NUM / (cellSize * cellSize); x++) {
-            ofSetColor(density[getPos(x, y)] * 150, density[getPos(x, y)] * 200,density[getPos(x, y)] * 255);
+            if (density[getPos(x, y)] < 0.65 && lock == true) {
+                ofSetColor(0, 0, 0);
+                if (density[getPos(x, y)] > 0.1) {
+                    ofSetColor(subDensityColor.r, subDensityColor.g, subDensityColor.b);
+                }
+            } else {
+                if (lock == true) {
+                    ofSetColor(mainDensityColor.r, mainDensityColor.g, mainDensityColor.b);
+                } else {
+                    ofSetColor(
+                               density[getPos(x, y)] * mainDensityColor.r,
+                               density[getPos(x, y)] * mainDensityColor.g,
+                               density[getPos(x, y)] * mainDensityColor.b
+                               );
+                }
+            }
             ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
         }
     }
 }
 
-void Fluid::drawTest() {
-    for (int y = 0; y < NUM / (cellSize * cellSize); y++) {
-        for (int x = 0; x < NUM / (cellSize * cellSize); x++) {
-            ofSetColor(250, 100, 155, test[getPos(x, y)]  * 80000);
-            ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
-        }
-    }
-}
-
-void Fluid::drawTest2() {
-    for (int y = 0; y < NUM / (cellSize * cellSize); y++) {
-        for (int x = 0; x < NUM / (cellSize * cellSize); x++) {
-            ofSetColor(255, 250, 50, test2[getPos(x, y)]  * 80000);
-            ofDrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize);
-        }
-    }
-}
-
-//速度を描画
 void Fluid::drawVelocity() {
-    ofSetColor(255, 255, 255, 50);
+    ofSetColor(30, 30, 30, 50);
     for (int y = 0; y < 102; y++) {
         for(int x = 0; x < 102; x++) {
             ofDrawLine(x * cellSize + cellSize/2,
@@ -273,81 +237,40 @@ void Fluid::drawVelocity() {
     }
 }
 
-//速度の更新
 void Fluid::velocityStep() {
     addSourceVec(velocity, prev_velocity, dt);
     swap(velocity, prev_velocity);
-    diffuseVec(velocity, prev_velocity, diffusion, dt);
+    
+    diffuseVec(velocity, prev_velocity, velocityDiffusion, dt);
+    
     project(velocity, prev_velocity);
     swap(velocity, prev_velocity);
     advectVel(velocity, prev_velocity, dt);
     project(velocity, prev_velocity);
 }
 
-//密度の更新
 void Fluid::densityStep() {
     addSourceFloat(density, prev_density, dt);
+    
     swap(density, prev_density);
-    diffuseFloat(density, prev_density, diffusion, dt);
+    
+    diffuseFloat(density, prev_density, densityDiffusion, dt);
+    
     swap(density, prev_density);
+    
     advect(density, prev_density, velocity, dt);
 }
 
-//マウスインプット
-void Fluid::get_from_ui() {
-    for (int i = 0; i < NUM; i++) {
-        prev_velocity[i] = ofVec2f(0, 0);
-        prev_density[i] = 0;
-    }
-    
-    int x = ofGetMouseX() / 10;
-    int y = ofGetMouseY() / 10;
-    
-    int index = getPos(x, y);
-    
-    if (index < 0) return;
-    if (index >= NUM) return;
-    if (!isMousePressed) return;
-    
-    if (isLeftButton) {
-        for (int ty = -inputSize; ty < inputSize; ty++) {
-            for (int tx = -inputSize; tx < inputSize; tx++) {
-                if (!(x + tx > 100 || x + tx < 0)) {
-                    if (!(y + ty > 100 || y + ty < 0)) {
-                        prev_density[getPos(x + tx, y+ty)] = 10;
-                    }
-                }
-            }
-        }
-    } else {
-        for (int ty = -inputSize; ty < inputSize; ty++) {
-            for (int tx = -inputSize; tx < inputSize; tx++) {
-                if (!(x + tx > 100 || x + tx < 0)) {
-                    if (!(y + ty > 100 || y + ty < 0)) {
-                        prev_density[getPos(x + tx, y+ty)] = -10;
-                    }
-                }
-            }
-        }
-    }
-    prev_velocity[index] = ofVec2f(((float)ofGetMouseX() - (float)ofGetPreviousMouseX()) * 1000, ((float)ofGetMouseY() - (float)ofGetPreviousMouseY()) * 1000);
-}
-
-//初期化
 void Fluid::setup() {
     for (int i = 0; i < NUM; i++) {
         velocity[i] = ofVec2f(0, 0);
         prev_velocity[i] = ofVec2f(0, 0);
         density[i] = 0;
         prev_density[i] = 0;
-        test[i] = 0;
-        test2[i] = 0;
     }
 }
 
-//更新
 void Fluid::update() {
-    get_from_ui();
     velocityStep();
     densityStep();
 }
